@@ -3,6 +3,7 @@ package com.example.pokedexapp.pokemonlist
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
@@ -32,6 +33,22 @@ class PokemonListViewModel @Inject constructor(
     private var cachedPokemonList = listOf<PokedexListEntry>()
     private var isSearchStarting = true
     var isSearching = mutableStateOf(false)
+
+    private val _searchQuery = mutableStateOf("")
+    val searchQuery: State<String> = _searchQuery
+
+    fun updateSearchQuery(newQuery: String) {
+        _searchQuery.value = newQuery
+        searchPokemonList(newQuery)
+    }
+
+
+    fun clearSearch() {
+        _searchQuery.value = ""
+        pokemonList.value = cachedPokemonList
+        isSearching.value = false
+        isSearchStarting = true
+    }
 
     init {
         loadPokemonPaginated()

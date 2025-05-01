@@ -57,6 +57,10 @@ fun PokemonListScreen(
     navController: NavController,
     viewModel: PokemonListViewModel = hiltViewModel()
 ) {
+    LaunchedEffect(true) {
+        viewModel.clearSearch()
+    }
+
     Surface(
         color = MaterialTheme.colorScheme.background,
         modifier = Modifier.fillMaxSize()
@@ -74,10 +78,9 @@ fun PokemonListScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
-                "Search..."
-            ) {
-                viewModel.searchPokemonList(it)
-            }
+                "Search...",
+                viewModel
+            )
             Spacer(modifier = Modifier.height(16.dp))
             PokemonList(navController)
         }
@@ -89,21 +92,16 @@ fun PokemonListScreen(
 fun SearchBar(
     modifier: Modifier = Modifier,
     hint: String = "",
-    onSearch: (String) -> Unit = {}
+    viewModel: PokemonListViewModel
 ) {
-    var text by remember {
-        mutableStateOf("")
-    }
+    val text by viewModel.searchQuery
     var isHintDisplayed by remember {
-        mutableStateOf(hint != "")
+        mutableStateOf(false)
     }
     Box (modifier = modifier) {
         BasicTextField(
             value = text,
-            onValueChange = {
-                text = it
-                onSearch(it)
-            },
+            onValueChange = { viewModel.updateSearchQuery(it) },
             maxLines = 1,
             singleLine = true,
             textStyle = TextStyle(color = Color.Black),
@@ -113,10 +111,10 @@ fun SearchBar(
                 .background(Color.White)
                 .padding(horizontal = 20.dp, vertical = 12.dp)
                 .onFocusChanged {
-                    isHintDisplayed = !it.hasFocus && text.isEmpty()
+                    isHintDisplayed = it.isFocused
                 }
         )
-        if(isHintDisplayed) {
+        if(!isHintDisplayed && text.isEmpty()) {
             Text(
                 text = hint,
                 color = Color.LightGray,
